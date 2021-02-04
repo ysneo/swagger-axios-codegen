@@ -1,5 +1,5 @@
 import camelcase from 'camelcase'
-import { IPropDef, ISwaggerOptions } from '../baseInterfaces'
+import { IDefinitionClass, IPropDef, ISwaggerOptions } from '../baseInterfaces'
 import { toBaseType, isDefinedGenericTypes, getDefinedGenericTypes } from '../utils'
 
 const baseTypes = ['string', 'number', 'object', 'boolean', 'any']
@@ -28,14 +28,14 @@ export function interfaceTemplate(
   export interface ${name} {
 
     ${props.map(p => classPropsTemplate(
-      p.name,
-      p.type,
-      p.format,
-      p.desc,
-      !strictNullChecks || !(p.validationModel as any)?.required,
-      false,
-      false
-    )).join('')}
+    p.name,
+    p.type,
+    p.format,
+    p.desc,
+    !strictNullChecks || !(p.validationModel as any)?.required,
+    false,
+    false
+  )).join('')}
   }
   `
 }
@@ -65,8 +65,8 @@ export function classTemplate(
   export class ${name} {
 
     ${props
-    .map(p =>
-      classPropsTemplate(
+      .map(p =>
+        classPropsTemplate(
           p.name,
           p.type,
           p.format,
@@ -185,7 +185,8 @@ interface IRequestSchema {
 }
 
 /** requestTemplate */
-export function requestTemplate(name: string, requestSchema: IRequestSchema, options: any) {
+export function requestTemplate(name: string, requestSchema: IRequestSchema, options: any, allModels: IDefinitionClass[]) {
+
   let {
     summary = '',
     parameters = '',
@@ -204,10 +205,19 @@ export function requestTemplate(name: string, requestSchema: IRequestSchema, opt
   const isArrayType = responseType.indexOf('[') > 0
   const transform = useClassTransformer && baseTypes.indexOf(nonArrayType) < 0
   const resolveString = transform
-    ? `(response: any${
-    isArrayType ? '[]' : ''
+    ? `(response: any${isArrayType ? '[]' : ''
     }) => resolve(plainToClass(${nonArrayType}, response, {strategy: 'excludeAll'}))`
     : 'resolve'
+
+  //! 处理 Promise 返回的类型
+  let processResponseType = responseType;
+  const existModel = allModels.find(a => a.name === responseType);
+  if (existModel) {
+    const existProp = existModel.value.props.find(p => p.name === 'data');
+    if (existProp) {
+      processResponseType = existProp.type;
+    }
+  }
 
   return `
 /**
@@ -215,7 +225,7 @@ export function requestTemplate(name: string, requestSchema: IRequestSchema, opt
  */
 ${options.useStaticMethod ? 'static' : ''} ${camelcase(
     name
-  )}(${parameters}options:IRequestOptions={}):Promise<${responseType}> {
+  )}(${parameters}options:IRequestOptions={}):Promise<${processResponseType}> {
   return new Promise((resolve, reject) => {
     let url = basePath+'${path}'
     ${pathReplace}
@@ -224,8 +234,7 @@ ${options.useStaticMethod ? 'static' : ''} ${camelcase(
       : ''}
     const configs:IRequestConfig = getConfigs('${method}', '${contentType}', url, options)
     ${parsedParameters && queryParameters.length > 0 ? 'configs.params = {' + queryParameters.join(',') + '}' : ''}
-    let data = ${
-    parsedParameters && bodyParameter && bodyParameter.length > 0
+    let data = ${parsedParameters && bodyParameter && bodyParameter.length > 0
       ? // ? bodyParameters.length === 1 && bodyParameters[0].startsWith('[') ? bodyParameters[0] : '{' + bodyParameters.join(',') + '}'
       bodyParameter
       : !!requestBody

@@ -113,7 +113,7 @@ export async function codegen(params: ISwaggerOptions) {
           console.log('req.requestSchema.parsedParameters.imports', JSON.stringify(req.requestSchema.parsedParameters.imports));
 
         }
-        text += requestTemplate(reqName, req.requestSchema, options)
+        text += requestTemplate(reqName, req.requestSchema, options, _allModel)
         let imports = findDeepRefs(req.requestSchema.parsedParameters.imports, _allModel, _allEnum)
         allImport = allImport.concat(imports)
       })
@@ -205,7 +205,7 @@ function codegenAll(
       let text = ''
       requests.forEach(req => {
         const reqName = options.methodNameMode == 'operationId' ? req.operationId : req.name
-        text += requestTemplate(reqName, req.requestSchema, options)
+        text += requestTemplate(reqName, req.requestSchema, options, Object.values(models))
       })
       text = serviceTemplate(className + options.serviceNameSuffix, text)
       apiSource += text
@@ -286,13 +286,13 @@ function codegenInclude(
         const reqName = options.methodNameMode == 'operationId' ? req.operationId : req.name
         if (includeRequests) {
           if (includeRequests.includes(reqName)) {
-            text += requestTemplate(reqName, req.requestSchema, options)
+            text += requestTemplate(reqName, req.requestSchema, options, allModel)
             // generate ref definition model
             let imports = findDeepRefs(req.requestSchema.parsedParameters.imports, allModel, allEnum)
             allImport = allImport.concat(imports)
           }
         } else {
-          text += requestTemplate(reqName, req.requestSchema, options)
+          text += requestTemplate(reqName, req.requestSchema, options, allModel)
           let imports = findDeepRefs(req.requestSchema.parsedParameters.imports, allModel, allEnum)
           allImport = allImport.concat(imports)
         }
@@ -368,7 +368,7 @@ function codegenMultimatchInclude(
 
   const includeRules: Record<string, Set<string>> = {}
   options.include.forEach(classNameFilter => {
-    // *,?,**,{},!, 
+    // *,?,**,{},!,
     // NOTICE: 目前要求 className 严格按照pascalcase书写
     if (typeof classNameFilter === 'string') {
       if (includeRules[classNameFilter] === undefined) {
@@ -431,7 +431,7 @@ function codegenMultimatchInclude(
 
       requiredRequestKeys.forEach(reqName => {
         const req = requestKeyMap[reqName]
-        text += requestTemplate(reqName, req.requestSchema, options)
+        text += requestTemplate(reqName, req.requestSchema, options, allModel)
         // generate ref definition model
         // console.log(`${reqName}-imports`, req.requestSchema.parsedParameters.imports)
         let imports = findDeepRefs(req.requestSchema.parsedParameters.imports, allModel, allEnum)

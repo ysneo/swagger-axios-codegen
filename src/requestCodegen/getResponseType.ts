@@ -30,7 +30,7 @@ export function getResponseType(reqProps: IRequestMethod, isV3: boolean): { resp
   if (!resSchema) {
     return { responseType: result, isRef }
   }
-
+  // console.log(resSchema)
   let checkType = resSchema.type
   let format = resSchema.format
   // 如果是数组
@@ -46,6 +46,7 @@ export function getResponseType(reqProps: IRequestMethod, isV3: boolean): { resp
   } else if (resSchema.$ref) {
     // 如果是引用对象
     result = refClassName(resSchema.$ref) || 'any'
+
     isRef = true
   } else {
     result = checkType
@@ -57,6 +58,9 @@ export function getResponseType(reqProps: IRequestMethod, isV3: boolean): { resp
   } else if (result == 'array') {
     result = 'any[]'
   }
-
+  // else if (result == 'Result') {
+  //   result = 'any'
+  // }
+  // console.log(result)
   return { responseType: result, isRef }
 }
