@@ -45,7 +45,7 @@ export function getGenericsClassNames(definitionClassName: string): string {
           ? `${interfaceClassName}<object>`
           : `${interfaceClassName}<${refClassName(TClassName)}>`
     } else {
-      console.log(interfaceClassName, definitionClassName)
+      // console.log(interfaceClassName, definitionClassName)
       str = trimString(RemoveSpecialCharacters(definitionClassName), '_', 'right')
     }
   } else {
