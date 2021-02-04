@@ -1,13 +1,14 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { ISwaggerOptions } from "../baseInterfaces";
-import { abpGenericTypeDefinition, universalGenericTypeDefinition } from './genericTypeDefinitionTemplate';
-import { trimString } from '../utils';
+import { ISwaggerOptions } from '../baseInterfaces'
+import { abpGenericTypeDefinition, universalGenericTypeDefinition } from './genericTypeDefinitionTemplate'
+import { trimString } from '../utils'
 
 export function serviceHeader(options: ISwaggerOptions) {
   const classTransformerImport = options.useClassTransformer
     ? `import { Expose, Transform, Type, plainToClass } from 'class-transformer';
-  ` : '';
+  `
+    : ''
   return `/** Generate by swagger-axios-codegen */
   // tslint:disable
   /* eslint-disable */
@@ -35,13 +36,10 @@ export function serviceHeader(options: ISwaggerOptions) {
   }
 
   ${requestHeader()}
-  `;
+  `
 }
 
-
-
 export function customerServiceHeader(options: ISwaggerOptions) {
-
   return `/** Generate by swagger-axios-codegen */
   // tslint:disable
   /* eslint-disable */
@@ -80,7 +78,7 @@ export function customerServiceHeader(options: ISwaggerOptions) {
   }
 
   ${requestHeader()}
-  
+
   `
 }
 
@@ -95,7 +93,12 @@ function requestHeader() {
   export function axios(configs: IRequestConfig, resolve: (p: any) => void, reject: (p: any) => void): Promise<any> {
     if (serviceOptions.axios) {
       return serviceOptions.axios.request(configs).then(res => {
-        resolve(res.data);
+        const data = res.data;
+        if(data.code === 200) {
+          resolve(data.data);
+        } else {
+          reject(data.msg);
+        }
       })
         .catch(err => {
           reject(err);
@@ -104,7 +107,7 @@ function requestHeader() {
       throw new Error('please inject yourself instance like axios  ')
     }
   }
-  
+
   export function getConfigs(method: string, contentType: string, url: string,options: any):IRequestConfig {
     const configs: IRequestConfig = { ...options, method, url };
     configs.headers = {
