@@ -204,6 +204,7 @@ function codegenAll(
     requestClasses.forEach(([className, requests]) => {
       let text = ''
       requests.forEach(req => {
+        // console.log(req);
         const reqName = options.methodNameMode == 'operationId' ? req.operationId : req.name
         text += requestTemplate(reqName, req.requestSchema, options, Object.values(models))
       })

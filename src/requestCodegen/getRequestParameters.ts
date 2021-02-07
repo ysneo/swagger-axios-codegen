@@ -43,7 +43,11 @@ export function getRequestParameters(params: IParameter[], useHeaderParameters: 
     // 引用类型定义
     if (p.schema) {
       if (p.schema.items) {
-        propType = refClassName(p.schema.items.$ref)
+        if (p.schema.items.$ref) {
+          propType = refClassName(p.schema.items.$ref)
+        } else {
+          propType = toBaseType(p.schema.items.type)
+        }
         if (p.schema.type && p.schema.type === 'array') {
           propType += '[]'
         }

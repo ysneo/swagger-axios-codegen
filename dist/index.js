@@ -199,6 +199,7 @@ function codegenAll(apiSource, options, requestClass, models, enums) {
         requestClasses.forEach(([className, requests]) => {
             let text = '';
             requests.forEach(req => {
+                // console.log(req);
                 const reqName = options.methodNameMode == 'operationId' ? req.operationId : req.name;
                 text += template_1.requestTemplate(reqName, req.requestSchema, options, Object.values(models));
             });

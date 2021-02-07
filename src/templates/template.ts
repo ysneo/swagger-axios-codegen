@@ -218,7 +218,7 @@ export function requestTemplate(name: string, requestSchema: IRequestSchema, opt
       processResponseType = existProp.type;
     }
   }
-
+  // console.log(parameters);
   return `
 /**
  * ${summary || ''}

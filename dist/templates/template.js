@@ -159,6 +159,7 @@ function requestTemplate(name, requestSchema, options, allModels) {
             processResponseType = existProp.type;
         }
     }
+    // console.log(parameters);
     return `
 /**
  * ${summary || ''}
