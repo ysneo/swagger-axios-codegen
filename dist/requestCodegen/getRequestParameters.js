@@ -45,7 +45,12 @@ function getRequestParameters(params, useHeaderParameters) {
         // 引用类型定义
         if (p.schema) {
             if (p.schema.items) {
-                propType = utils_1.refClassName(p.schema.items.$ref);
+                if (p.schema.items.$ref) {
+                    propType = utils_1.refClassName(p.schema.items.$ref);
+                }
+                else {
+                    propType = utils_1.toBaseType(p.schema.items.type);
+                }
                 if (p.schema.type && p.schema.type === 'array') {
                     propType += '[]';
                 }
